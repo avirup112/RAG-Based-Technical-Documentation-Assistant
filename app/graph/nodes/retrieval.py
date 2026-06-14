@@ -1,4 +1,3 @@
-
 from app.graph.state import GraphState
 from app.retrieval.hybrid import hybrid_search
 from app.retrieval.rrf import reciprocal_rank_fusion
@@ -7,11 +6,12 @@ from app.core.constants import SENDER_RETRIEVER
 from loguru import logger
 from langsmith import traceable
 
+
 @traceable
 def retrieval_node(state: GraphState) -> GraphState:
     """
     Performs hybrid retrieval across ALL expanded queries from the Query Transformation pipeline.
-    
+
     Strategy:
     - For each expanded query (originals + expansions + decomposed sub-questions),
       run a full hybrid search (ChromaDB dense + BM25 sparse).
@@ -30,7 +30,9 @@ def retrieval_node(state: GraphState) -> GraphState:
     else:
         search_queries = [state.get("rewritten_question", state["question"])]
 
-    logger.info(f"Retrieval: running hybrid search across {len(search_queries)} query variants.")
+    logger.info(
+        f"Retrieval: running hybrid search across {len(search_queries)} query variants."
+    )
 
     # Run hybrid search for each query variant and collect all result lists
     all_result_sets = []
@@ -60,9 +62,9 @@ def retrieval_node(state: GraphState) -> GraphState:
         "retries": retries,
         "sender_metadata": {
             "sender": SENDER_RETRIEVER,
-            "signature": sign_payload(SENDER_RETRIEVER, {
-                "docs_count": len(documents),
-                "query_variants": len(search_queries)
-            })
-        }
+            "signature": sign_payload(
+                SENDER_RETRIEVER,
+                {"docs_count": len(documents), "query_variants": len(search_queries)},
+            ),
+        },
     }

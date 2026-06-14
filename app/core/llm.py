@@ -6,6 +6,7 @@ from langchain.cache import InMemoryCache
 # Enable global in-memory caching for all LLM calls
 set_llm_cache(InMemoryCache())
 
+
 def get_llm(temperature: float = 0.0) -> ChatGroq:
     """
     Initializes the LLaMA 3.1 8B Instant model via Groq, used as the main generator.
@@ -14,8 +15,9 @@ def get_llm(temperature: float = 0.0) -> ChatGroq:
     return ChatGroq(
         model="llama-3.1-8b-instant",
         api_key=settings.GROQ_API_KEY,
-        temperature=temperature
+        temperature=temperature,
     )
+
 
 def get_judge_llm(temperature: float = 0.0) -> ChatGroq:
     """
@@ -25,5 +27,5 @@ def get_judge_llm(temperature: float = 0.0) -> ChatGroq:
     return ChatGroq(
         model="llama-3.3-70b-versatile",
         api_key=settings.GROQ_API_KEY,
-        temperature=temperature
+        temperature=temperature,
     )

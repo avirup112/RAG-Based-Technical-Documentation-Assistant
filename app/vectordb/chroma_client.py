@@ -9,12 +9,12 @@ def get_chroma_client() -> chromadb.ClientAPI:
     """
     return chromadb.PersistentClient(path=settings.CHROMA_DB_DIR)
 
+
 def get_collection():
     """
     Returns the main documentation collection.
     """
     client = get_chroma_client()
     return client.get_or_create_collection(
-        name=COLLECTION_NAME,
-        metadata={"hnsw:space": "cosine"}
+        name=COLLECTION_NAME, metadata={"hnsw:space": "cosine"}
     )

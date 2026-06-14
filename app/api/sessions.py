@@ -4,12 +4,14 @@ from app.memory.memory import MemoryManager
 router = APIRouter()
 memory = MemoryManager()
 
+
 @router.get("/")
 async def list_sessions():
     """
     Returns a list of all past sessions (id + title derived from first user message).
     """
     return {"sessions": memory.list_sessions()}
+
 
 @router.get("/{session_id}/history")
 async def get_session_history(session_id: str):

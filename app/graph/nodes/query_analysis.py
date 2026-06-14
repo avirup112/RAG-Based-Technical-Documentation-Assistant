@@ -39,7 +39,9 @@ def decompose_query(question: str) -> List[str]:
         sub_questions = json.loads(text)
         if not isinstance(sub_questions, list) or len(sub_questions) == 0:
             return [question]
-        logger.info(f"Decomposed into {len(sub_questions)} sub-questions: {sub_questions}")
+        logger.info(
+            f"Decomposed into {len(sub_questions)} sub-questions: {sub_questions}"
+        )
         return sub_questions
     except Exception as e:
         logger.error(f"Query decomposition failed: {e}")
@@ -73,7 +75,9 @@ def expand_queries(sub_questions: List[str]) -> List[str]:
         try:
             response = llm.invoke(prompt)
             text = response.content.strip()
-            text = re.sub(r"^```json\s*|^```\s*|```$", "", text, flags=re.MULTILINE).strip()
+            text = re.sub(
+                r"^```json\s*|^```\s*|```$", "", text, flags=re.MULTILINE
+            ).strip()
             variants = json.loads(text)
             if isinstance(variants, list):
                 all_queries.extend(variants)
@@ -142,7 +146,7 @@ def query_analysis_node(state: GraphState) -> GraphState:
 
     # Stage 0: Redact PII
     safe_question = redact_pii(raw_question)
-    cleaned_question = re.sub(r'\s+', ' ', safe_question).strip()
+    cleaned_question = re.sub(r"\s+", " ", safe_question).strip()
     logger.info(f"Query Analysis started. Cleaned question: {cleaned_question}")
 
     # Stage 1: Decompose
@@ -156,7 +160,7 @@ def query_analysis_node(state: GraphState) -> GraphState:
 
     return {
         **state,
-        "question": state["question"],           # always preserve original raw question
+        "question": state["question"],  # always preserve original raw question
         "rewritten_question": cleaned_question,  # cleaned version for downstream
         "sub_questions": sub_questions,
         "expanded_queries": expanded_queries,

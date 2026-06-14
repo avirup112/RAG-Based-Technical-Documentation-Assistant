@@ -6,6 +6,7 @@ from app.core.constants import SENDER_ROUTER
 import json
 from langsmith import traceable
 
+
 @traceable
 def metadata_router_node(state: GraphState) -> GraphState:
     """
@@ -13,7 +14,7 @@ def metadata_router_node(state: GraphState) -> GraphState:
     """
     question = state.get("rewritten_question", state["question"])
     llm = get_llm(temperature=0.0)
-    
+
     prompt = f"""
     Analyze the following technical question and extract metadata.
     Return ONLY a JSON object with:
@@ -22,7 +23,7 @@ def metadata_router_node(state: GraphState) -> GraphState:
 
     Question: {question}
     """
-    
+
     try:
         response = llm.invoke(prompt)
         text = response.content.strip()
@@ -33,14 +34,14 @@ def metadata_router_node(state: GraphState) -> GraphState:
         data = json.loads(text)
     except Exception:
         data = {}
-        
+
     filters = create_chroma_filter(data)
-    
+
     return {
         **state,
         "metadata_filters": filters,
         "sender_metadata": {
             "sender": SENDER_ROUTER,
-            "signature": sign_payload(SENDER_ROUTER, {"action": "routed"})
-        }
+            "signature": sign_payload(SENDER_ROUTER, {"action": "routed"}),
+        },
     }

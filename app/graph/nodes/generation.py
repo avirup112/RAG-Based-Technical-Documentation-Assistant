@@ -27,6 +27,7 @@ QUERY_TYPE_INSTRUCTIONS = {
     ),
 }
 
+
 @traceable
 def generation_node(state: GraphState) -> GraphState:
     """
@@ -45,27 +46,30 @@ def generation_node(state: GraphState) -> GraphState:
             "answer": "I could not find any relevant documentation to answer your question.",
             "sender_metadata": {
                 "sender": SENDER_GENERATOR,
-                "signature": sign_payload(SENDER_GENERATOR, {"status": "no_docs"})
-            }
+                "signature": sign_payload(SENDER_GENERATOR, {"status": "no_docs"}),
+            },
         }
 
     # Build context from retrieved docs
-    context = "\n\n".join([
-        f"Source: {d['metadata'].get('source', 'Unknown')}\nContent:\n{d['content']}"
-        for d in docs
-    ])
+    context = "\n\n".join(
+        [
+            f"Source: {d['metadata'].get('source', 'Unknown')}\nContent:\n{d['content']}"
+            for d in docs
+        ]
+    )
 
     llm = get_llm(temperature=0.0)
 
     # Build conversation history string (it is already bounded/summarized by MemoryManager)
     chat_history = state.get("chat_history", [])
-    history_str = "\n".join([
-        f"{msg['role']}: {msg['content']}"
-        for msg in chat_history
-    ])
+    history_str = "\n".join(
+        [f"{msg['role']}: {msg['content']}" for msg in chat_history]
+    )
 
     # Get style instruction for this query type
-    style_instruction = QUERY_TYPE_INSTRUCTIONS.get(query_type, QUERY_TYPE_INSTRUCTIONS["conceptual"])
+    style_instruction = QUERY_TYPE_INSTRUCTIONS.get(
+        query_type, QUERY_TYPE_INSTRUCTIONS["conceptual"]
+    )
 
     # If the question was decomposed, remind the LLM to address all sub-questions
     # but NOT to format them as separate headings or sections — answer must be unified prose.
@@ -111,10 +115,9 @@ Answer:
         "answer": answer,
         "sender_metadata": {
             "sender": SENDER_GENERATOR,
-            "signature": sign_payload(SENDER_GENERATOR, {
-                "status": "generated",
-                "is_safe": is_safe,
-                "query_type": query_type
-            })
-        }
+            "signature": sign_payload(
+                SENDER_GENERATOR,
+                {"status": "generated", "is_safe": is_safe, "query_type": query_type},
+            ),
+        },
     }

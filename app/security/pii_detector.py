@@ -7,9 +7,12 @@ try:
     analyzer = AnalyzerEngine()
     anonymizer = AnonymizerEngine()
 except Exception as e:
-    logger.error(f"Failed to initialize Presidio engines: {e}. Make sure python -m spacy download en_core_web_lg is installed.")
+    logger.error(
+        f"Failed to initialize Presidio engines: {e}. Make sure python -m spacy download en_core_web_lg is installed."
+    )
     analyzer = None
     anonymizer = None
+
 
 def redact_pii(text: str) -> str:
     """
@@ -21,14 +24,14 @@ def redact_pii(text: str) -> str:
     if not analyzer or not anonymizer:
         logger.warning("Presidio is not initialized, falling back to original text.")
         return text
-        
+
     try:
         # Analyze the text for PII entities
-        results = analyzer.analyze(text=text, entities=[], language='en')
-        
+        results = analyzer.analyze(text=text, entities=[], language="en")
+
         # Anonymize the findings
         anonymized_result = anonymizer.anonymize(text=text, analyzer_results=results)
-        
+
         return anonymized_result.text
     except Exception as e:
         logger.error(f"Error during PII redaction: {e}")

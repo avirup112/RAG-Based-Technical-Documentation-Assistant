@@ -8,18 +8,18 @@ from loguru import logger
 router = APIRouter()
 graph = build_workflow()
 
+
 @router.post("/", response_model=QueryResponse)
 async def query_assistant(request: QueryRequest, username: str = Depends(verify_token)):
     """
     Query the RAG assistant. Requires JWT auth.
     """
-    logger.info(f"User {username} asked: {request.question} in session: {request.session_id}")
-    
-    initial_state = {
-        "question": request.question,
-        "session_id": request.session_id
-    }
-    
+    logger.info(
+        f"User {username} asked: {request.question} in session: {request.session_id}"
+    )
+
+    initial_state = {"question": request.question, "session_id": request.session_id}
+
     # Run the graph
     try:
         final_state = graph.invoke(initial_state)
@@ -28,19 +28,17 @@ async def query_assistant(request: QueryRequest, username: str = Depends(verify_
         return QueryResponse(
             answer="An error occurred while processing your query.",
             sources=[],
-            hallucination_score="fail"
+            hallucination_score="fail",
         )
-    
+
     answer = final_state.get("answer", "No answer generated.")
     relevant_docs = final_state.get("relevant_docs", [])
     hallucination_score = final_state.get("hallucination_score", "unknown")
-    
+
     sources = extract_citations(relevant_docs)
-    
+
     logger.info(f"Query completed. Hallucination score: {hallucination_score}")
-    
+
     return QueryResponse(
-        answer=answer,
-        sources=sources,
-        hallucination_score=hallucination_score
+        answer=answer, sources=sources, hallucination_score=hallucination_score
     )

@@ -8,9 +8,11 @@ from datetime import timedelta
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
+
 @app.on_event("startup")
 async def startup_event():
     setup_logger()
+
 
 # Token generation route for testing
 @app.post("/token")
@@ -24,6 +26,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         return {"access_token": access_token, "token_type": "bearer"}
     raise HTTPException(status_code=400, detail="Incorrect username or password")
 
+
 app.include_router(query.router, prefix="/query", tags=["Query"])
 app.include_router(ingest.router, prefix="/ingest", tags=["Ingest"])
 app.include_router(documents.router, prefix="/documents", tags=["Documents"])
@@ -32,4 +35,5 @@ app.include_router(sessions.router, prefix="/sessions", tags=["Sessions"])
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

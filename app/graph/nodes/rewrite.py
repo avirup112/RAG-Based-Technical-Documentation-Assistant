@@ -5,6 +5,7 @@ from app.core.constants import SENDER_REWRITER
 from loguru import logger
 from langsmith import traceable
 
+
 @traceable
 def rewrite_node(state: GraphState) -> GraphState:
     """
@@ -14,7 +15,7 @@ def rewrite_node(state: GraphState) -> GraphState:
     """
     question = state["question"]
     llm = get_llm(temperature=0.0)
-    
+
     prompt = f"""
     You are a question re-writer that converts an input question to a better version that is optimized
     for vectorstore retrieval. Look at the input and try to reason about the underlying semantic intent / meaning.
@@ -25,13 +26,13 @@ def rewrite_node(state: GraphState) -> GraphState:
     
     Formulate an improved question. Return ONLY the improved question.
     """
-    
+
     response = llm.invoke(prompt)
     rewritten_question = response.content.strip()
     retries = state.get("retries", 0) + 1
-    
+
     logger.info(f"Query rewritten (attempt {retries}): {rewritten_question}")
-    
+
     return {
         **state,
         "rewritten_question": rewritten_question,
@@ -41,6 +42,6 @@ def rewrite_node(state: GraphState) -> GraphState:
         "expanded_queries": [],
         "sender_metadata": {
             "sender": SENDER_REWRITER,
-            "signature": sign_payload(SENDER_REWRITER, {"retries": retries})
-        }
+            "signature": sign_payload(SENDER_REWRITER, {"retries": retries}),
+        },
     }
