@@ -157,3 +157,64 @@ If you set `LANGCHAIN_TRACING_V2=true` in your `.env`, you can open your LangSmi
 ### Tracing Details
 ![LangSmith Tracing Details](./assets/langsmith-traces.png)
 *Deep-dive tracing allows you to inspect individual runs. Because every LangGraph node is decorated with `@traceable`, you can see the exact inputs/outputs, execution time, and token usage for each discrete step in the self-corrective RAG pipeline (e.g., retrieval, grading, rewriting, generation).*
+
+---
+
+## 🔌 Example API Requests and Responses
+
+**Generate a Token**
+```bash
+curl -X POST http://localhost:8000/token \
+  -F "username=admin" \
+  -F "password=admin"
+```
+*Response:*
+```json
+{
+  "access_token": "eyJhbG...",
+  "token_type": "bearer"
+}
+```
+
+**Query the RAG Assistant**
+```bash
+curl -X POST http://localhost:8000/query/ \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "How does FastAPI routing work?"}'
+```
+*Response:*
+```json
+{
+  "answer": "FastAPI routing works by...",
+  "sources": ["routing.md", "endpoints.md"]
+}
+```
+
+---
+
+## 🤔 Design Decisions and Tradeoffs
+
+- **Hybrid Search over Vector-Only**: I chose to combine dense embeddings (ChromaDB) with sparse lexical search (BM25) via Reciprocal Rank Fusion. *Tradeoff*: Increases retrieval latency and memory usage, but critically improves recall for exact-match technical terms (like variable names or specific error codes) that dense vectors often mishandle.
+- **LangGraph vs. Linear Chains**: I opted for a stateful, cyclical graph instead of a simple linear LangChain pipeline. *Tradeoff*: Significantly more complex to develop and trace, but allows the system to self-correct and rewrite queries if initial retrieval fails, preventing "I don't know" dead-ends.
+- **Groq over OpenAI/Anthropic**: Chosen for its low/free cost and speed. Because the self-corrective loop might make 4-5 LLM calls per user query (routing, grading, rewriting, generating, checking), we needed sub-second inference to keep the UX snappy.
+
+---
+
+## ✂️ Chunking & Embedding Strategy Choices
+- **Chunking Strategy**: Used **Recursive Character Text Splitting** with a chunk size of `1000` and an overlap of `200`. For technical documentation (especially markdown with code blocks), this ensures that related code and its explanatory text usually stay within the same chunk without truncating context.
+- **Embedding Model**: Utilized a local HuggingFace sentence-transformer (`all-MiniLM-L6-v2` or similar default). It is lightweight enough to run locally without incurring external API costs, while maintaining high semantic accuracy.
+
+---
+
+## 💡 Assumptions Made
+- **Internal Doc Priority**: Assumed that the internal markdown documentation is the absolute source of truth. The system will fiercely try to answer from internal docs first, only falling back to Tavily Web Search if the user asks something completely outside the ingested corpus or the context is entirely missing.
+- **Admin Access**: Assumed a single tenant/admin model for ingestion testing. The `/token` endpoint is currently hardcoded for an `admin:admin` mock user to easily test the protected routes.
+
+---
+
+## 🚀 What I Would Improve With More Time
+1. **Persistent Metadata Store**: Replace the in-memory/JSON-based metadata tracking with a proper relational database (like PostgreSQL) to handle millions of documents efficiently.
+2. **Distributed Sparse Search**: Upgrade BM25 from an in-memory object to a fully distributed index like Elasticsearch or OpenSearch to scale beyond local memory limits.
+3. **Advanced Semantic Chunking**: Implement AST-based (Abstract Syntax Tree) code chunking so that Python functions, classes, and JSON blocks are never split awkwardly in half.
+4. **Production Authentication**: Connect the FastAPI JWT authentication system to a real Identity Provider (e.g., Auth0, OAuth2, AWS Cognito) instead of using mock credentials.
