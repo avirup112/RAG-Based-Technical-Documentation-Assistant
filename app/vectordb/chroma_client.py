@@ -1,7 +1,7 @@
 import chromadb
 from app.core.config import settings
 from app.core.constants import COLLECTION_NAME
-from chromadb.config import Settings as ChromaSettings
+
 
 def get_chroma_client() -> chromadb.ClientAPI:
     """

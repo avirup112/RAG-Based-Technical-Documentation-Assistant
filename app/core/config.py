@@ -1,3 +1,4 @@
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -24,8 +25,6 @@ class Settings(BaseSettings):
     LANGCHAIN_PROJECT: str = "rag-doc-assistant"
     
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
-
-import os
 
 settings = Settings()
 

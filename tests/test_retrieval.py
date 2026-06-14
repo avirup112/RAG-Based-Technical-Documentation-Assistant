@@ -1,4 +1,4 @@
-import pytest
+
 from app.retrieval.rrf import reciprocal_rank_fusion
 
 def test_rrf():

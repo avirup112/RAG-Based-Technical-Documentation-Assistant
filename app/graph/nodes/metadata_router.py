@@ -31,7 +31,7 @@ def metadata_router_node(state: GraphState) -> GraphState:
         elif text.startswith("```"):
             text = text[3:-3]
         data = json.loads(text)
-    except:
+    except Exception:
         data = {}
         
     filters = create_chroma_filter(data)

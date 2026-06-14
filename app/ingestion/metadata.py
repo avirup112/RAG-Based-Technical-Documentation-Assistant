@@ -1,4 +1,4 @@
-import json
+
 from typing import Dict, Any
 
 def extract_metadata(content: str, source: str) -> Dict[str, Any]:

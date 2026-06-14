@@ -2,7 +2,7 @@ from rank_bm25 import BM25Okapi
 from app.vectordb.chroma_client import get_collection
 from app.core.constants import BM25_K
 from typing import List, Dict, Any
-from functools import lru_cache
+
 
 def build_bm25_index(filters: Dict[str, Any] = None) -> tuple[BM25Okapi, List[Dict]]:
     """
